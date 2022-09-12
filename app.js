@@ -1,38 +1,27 @@
 // app.js
 // require packages used in the project
 const express = require('express')
+const router = express.Router()
+
+
+const exphbs = require('express-handlebars')
+const routes = require('./routes')
+require('./config/mongoose')
+
+const bodyParser = require('body-parser')
+const methodOverride = require('method-override')
+
 const app = express()
 const port = 3000
-const exphbs = require('express-handlebars')
-const restaurantList = require('./restaurant.json')
 
-// setting template engine
 app.engine('handlebars', exphbs({ defaultLayout: 'main' }))
 app.set('view engine', 'handlebars')
-
+app.use(bodyParser.urlencoded({ extended: true }))
 // setting static files
 app.use(express.static('public'))
+app.use(methodOverride('_method'))
 
-// routes setting
-app.get('/', (req, res) => {
-  // past the restaurant data into 'index' partial template
-  res.render('index', { restaurants: restaurantList.results })
-})
-
-app.get('/restaurants/:restaurant_id', (req, res) => {
-  const restaurant = restaurantList.results.filter(
-    restaurant => restaurant.id == req.params.restaurant_id
-  )
-  res.render('show', { restaurant: restaurant[0] })
-})
-
-app.get('/search', (req, res) => {
-  const keyword = req.query.keyword
-  const restaurants = restaurantList.results.filter(restaurant => {
-    return restaurant.name.toLowerCase().includes(keyword.toLowerCase())
-  })
-  res.render('index', { restaurants: restaurants, keyword: keyword })
-})
+app.use(routes)
 
 // start and listen on the Express server
 app.listen(port, () => {
